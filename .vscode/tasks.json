@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake: Build FlappyBird",
+            "type": "shell",
+            "command": "C:/msys64/mingw64/bin/cmake.exe --build build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run FlappyBird",
+            "type": "shell",
+            "command": "${workspaceFolder}/build/FlappyBird.exe",
+            "dependsOn": "CMake: Build FlappyBird",
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: Configure",
+            "type": "shell",
+            "command": "C:/msys64/mingw64/bin/cmake.exe -B build -G Ninja -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe -DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/ninja.exe -DCMAKE_PREFIX_PATH=C:/msys64/mingw64",
+            "problemMatcher": "$gcc"
+        }
+    ]
+}
