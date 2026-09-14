@@ -1,0 +1,14 @@
+# CMake build outputs
+build/CMakeFiles/
+build/CMakeCache.txt
+build/Makefile
+build/cmake_install.cmake
+build/compile_commands.json
+
+# IDEs
+.vscode/*
+!.vscode/c_cpp_properties.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+
