@@ -1,6 +1,6 @@
 #include "entities/Bird.hpp"
-#include <cmath>
-#include <algorithm>
+#include "math_lib/MathLib.hpp"
+
 
 namespace entities {
 
@@ -104,7 +104,7 @@ void Bird::update(float dt) {
     // Hiệu ứng nhịp thở của khiên
     if (m_hasShield) {
         m_shieldAnimTimer += dt * 4.0f;
-        float pulse = 24.0f + std::sin(m_shieldAnimTimer) * 2.0f;
+        float pulse = 24.0f + math_lib::sin(m_shieldAnimTimer) * 2.0f;
         m_shieldBubble.setRadius(pulse);
         m_shieldBubble.setOrigin({pulse, pulse});
     }
@@ -154,8 +154,8 @@ void Bird::updateVisuals() {
         m_bodyShape.setRotation(m_rotation);
 
         const float rad = m_rotation.asRadians();
-        const float cosA = std::cos(rad);
-        const float sinA = std::sin(rad);
+        const float cosA = math_lib::cos(rad);
+        const float sinA = math_lib::sin(rad);
 
         // Vị trí cánh (hơi lùi về sau)
         sf::Vector2f wingOffset(-6.0f, 2.0f);
@@ -242,8 +242,8 @@ sf::FloatRect Bird::getHitbox() const {
     return sf::FloatRect(
         {bounds.position.x + GameConfig::HITBOX_BIRD_INSET_X,
          bounds.position.y + GameConfig::HITBOX_BIRD_INSET_Y},
-        {std::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_BIRD_INSET_X),
-         std::max(0.0f, bounds.size.y - 2.0f * GameConfig::HITBOX_BIRD_INSET_Y)}
+        {math_lib::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_BIRD_INSET_X),
+         math_lib::max(0.0f, bounds.size.y - 2.0f * GameConfig::HITBOX_BIRD_INSET_Y)}
     );
 }
 

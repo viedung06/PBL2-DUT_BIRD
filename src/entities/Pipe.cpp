@@ -1,5 +1,5 @@
 #include "entities/Pipe.hpp"
-#include <algorithm>
+#include "math_lib/MathLib.hpp"
 
 namespace entities {
 
@@ -48,9 +48,9 @@ void Pipe::update(float dt) {
 
 void Pipe::updateVisuals() {
     const float halfGap = m_gapSize / 2.0f;
-    const float topHeight = std::max(0.0f, m_gapY - halfGap);
+    const float topHeight = math_lib::max(0.0f, m_gapY - halfGap);
     const float bottomY = m_gapY + halfGap;
-    const float bottomHeight = std::max(0.0f, GameConfig::GROUND_Y - bottomY);
+    const float bottomHeight = math_lib::max(0.0f, GameConfig::GROUND_Y - bottomY);
 
     const float rimHeight = 24.0f;
     const float rimExtraWidth = 8.0f; // Vành miệng ống nở rộng hơn thân mỗi bên 4px
@@ -75,17 +75,17 @@ void Pipe::updateVisuals() {
         }
     } else {
         // Căn chỉnh fallback shapes cho ống trên
-        m_topBodyShape.setSize({m_width, std::max(0.0f, topHeight - rimHeight)});
+        m_topBodyShape.setSize({m_width, math_lib::max(0.0f, topHeight - rimHeight)});
         m_topBodyShape.setPosition({m_x, 0.0f});
 
         m_topRimShape.setSize({m_width + rimExtraWidth, rimHeight});
-        m_topRimShape.setPosition({m_x - rimExtraWidth / 2.0f, std::max(0.0f, topHeight - rimHeight)});
+        m_topRimShape.setPosition({m_x - rimExtraWidth / 2.0f, math_lib::max(0.0f, topHeight - rimHeight)});
 
         // Căn chỉnh fallback shapes cho ống dưới
         m_bottomRimShape.setSize({m_width + rimExtraWidth, rimHeight});
         m_bottomRimShape.setPosition({m_x - rimExtraWidth / 2.0f, bottomY});
 
-        m_bottomBodyShape.setSize({m_width, std::max(0.0f, bottomHeight - rimHeight)});
+        m_bottomBodyShape.setSize({m_width, math_lib::max(0.0f, bottomHeight - rimHeight)});
         m_bottomBodyShape.setPosition({m_x, bottomY + rimHeight});
     }
 }
@@ -104,13 +104,13 @@ void Pipe::setPassed(bool passed) {
 }
 
 sf::FloatRect Pipe::getTopBounds() const {
-    const float topHeight = std::max(0.0f, m_gapY - (m_gapSize / 2.0f));
+    const float topHeight = math_lib::max(0.0f, m_gapY - (m_gapSize / 2.0f));
     return sf::FloatRect({m_x, 0.0f}, {m_width, topHeight});
 }
 
 sf::FloatRect Pipe::getBottomBounds() const {
     const float bottomY = m_gapY + (m_gapSize / 2.0f);
-    const float bottomHeight = std::max(0.0f, GameConfig::GROUND_Y - bottomY);
+    const float bottomHeight = math_lib::max(0.0f, GameConfig::GROUND_Y - bottomY);
     return sf::FloatRect({m_x, bottomY}, {m_width, bottomHeight});
 }
 
@@ -118,8 +118,8 @@ sf::FloatRect Pipe::getTopHitbox() const {
     sf::FloatRect bounds = getTopBounds();
     return sf::FloatRect(
         {bounds.position.x + GameConfig::HITBOX_PIPE_INSET_X, 0.0f},
-        {std::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
-         std::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
+        {math_lib::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
+         math_lib::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
     );
 }
 
@@ -128,8 +128,8 @@ sf::FloatRect Pipe::getBottomHitbox() const {
     return sf::FloatRect(
         {bounds.position.x + GameConfig::HITBOX_PIPE_INSET_X,
          bounds.position.y + GameConfig::HITBOX_PIPE_INSET_Y},
-        {std::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
-         std::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
+        {math_lib::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
+         math_lib::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
     );
 }
 

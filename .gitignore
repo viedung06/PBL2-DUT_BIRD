@@ -4,6 +4,9 @@ build/CMakeCache.txt
 build/Makefile
 build/cmake_install.cmake
 build/compile_commands.json
+build/.ninja*
+build/*.ninja
+
 
 # IDEs
 .vscode/*

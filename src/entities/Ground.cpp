@@ -1,5 +1,5 @@
 #include "entities/Ground.hpp"
-#include <algorithm>
+#include "math_lib/MathLib.hpp"
 
 namespace entities {
 
@@ -69,7 +69,7 @@ sf::FloatRect Ground::getHitbox() const {
     // Áp dụng co lùi biên trên của mặt đất (SFML 3: sf::FloatRect(position, size))
     return sf::FloatRect(
         {0.0f, m_posY + GameConfig::HITBOX_GROUND_INSET_Y},
-        {m_width, std::max(0.0f, m_height - GameConfig::HITBOX_GROUND_INSET_Y)}
+        {m_width, math_lib::max(0.0f, m_height - GameConfig::HITBOX_GROUND_INSET_Y)}
     );
 }
 
