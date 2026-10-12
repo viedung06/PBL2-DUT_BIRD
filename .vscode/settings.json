@@ -1,0 +1,17 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "build/4.1.0": true,
+        "build/FlappyBird.dir": true,
+        "build/pkgRedirects": true,
+        "build/CMakeFiles": true,
+        "build/*.ninja": true,
+        "build/.ninja_*": true,
+        "build/CMakeCache.txt": true,
+        "build/*.cmake": true,
+        "build/*.yaml": true,
+        "build/TargetDirectories.txt": true,
+        "build/cmake.check_cache": true,
+        "build/InstallScripts.json": true
+    }
+}
