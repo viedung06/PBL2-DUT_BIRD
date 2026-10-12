@@ -8,7 +8,7 @@
 namespace entities {
 
 /**
- * @brief Lớp đại diện cho mặt đất trong trò chơi (tương thích SFML 3.x / 3.1).
+ * Lớp đại diện cho mặt đất trong trò chơi (tương thích SFML 3.x / 3.1).
  * 
  * Quản lý chuyển động cuộn vô tận (infinite scrolling loop),
  * hỗ trợ render từ Texture hoặc tự vẽ bằng Shape fallback,

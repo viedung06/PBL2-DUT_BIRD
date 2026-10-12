@@ -8,7 +8,7 @@
 namespace entities {
 
 /**
- * @brief Lớp đại diện cho một cặp ống cống chướng ngại vật (Ống trên & Ống dưới) tương thích SFML 3.x / 3.1.
+ * Lớp đại diện cho một cặp ống cống chướng ngại vật (Ống trên & Ống dưới) tương thích SFML 3.x / 3.1.
  * 
  * Quản lý vị trí di chuyển sang trái, tọa độ khoảng hở (gap),
  * kiểm tra chim bay qua để cộng điểm (passed),
