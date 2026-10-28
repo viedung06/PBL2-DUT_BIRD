@@ -2,28 +2,25 @@
 #define PIPE_SPAWNER_SYSTEM_HPP
 
 #include <SFML/Graphics.hpp>
-#include <vector>
 #include <memory>
 #include "entities/Pipe.hpp"
 #include "core/GameConfig.hpp"
-#include "math_lib/MathLib.hpp"
+#include "datastructures/my_queue.hpp"
 
 namespace systems {
 
 /**
  * @brief Hệ thống quản lý vòng đời của các chướng ngại vật Pipe (SFML 3.x / 3.1).
  * 
+ * - Sử dụng cấu trúc dữ liệu my_queue tự viết để quản lý các cặp ống vào/ra theo chuẩn FIFO.
  * - Tự động tạo cặp ống sau mỗi khoảng thời gian m_spawnInterval.
- * - Sinh tọa độ khe hở gapY ngẫu nhiên trong vùng an toàn bằng thuật toán math_lib::randomFloat.
- * - Quản lý danh sách ống bằng std::unique_ptr<entities::Pipe> và tự động hủy ống ra khỏi màn hình (zero memory leak).
- * - Cung cấp giao diện kiểm tra va chạm tập trung và kiểm tra tính điểm khi chim vượt qua ống.
+ * - Tự động giải phóng các ống đã trôi hoàn toàn ra khỏi màn hình bên trái (Zero Memory Leak).
  */
 class PipeSpawnerSystem {
 public:
     explicit PipeSpawnerSystem(float spawnInterval = GameConfig::PIPE_SPAWN_INTERVAL);
     ~PipeSpawnerSystem() = default;
 
-    // Ngăn chặn copy để quản lý tài nguyên unique_ptr an toàn
     PipeSpawnerSystem(const PipeSpawnerSystem&) = delete;
     PipeSpawnerSystem& operator=(const PipeSpawnerSystem&) = delete;
 
@@ -50,14 +47,15 @@ public:
     // Truy xuất số lượng ống đang hoạt động
     size_t getPipeCount() const;
 
-    // Truy xuất danh sách ống phục vụ test hoặc render mở rộng
-    const std::vector<std::unique_ptr<entities::Pipe>>& getPipes() const;
+    // Truy xuất hàng đợi ống để CollisionManager / PowerUp kiểm tra va chạm
+    datastructures::my_queue<std::unique_ptr<entities::Pipe>>& getPipes();
+    const datastructures::my_queue<std::unique_ptr<entities::Pipe>>& getPipes() const;
 
 private:
     void spawnPipe();
 
 private:
-    std::vector<std::unique_ptr<entities::Pipe>> m_pipes;
+    datastructures::my_queue<std::unique_ptr<entities::Pipe>> m_pipeQueue;
     float m_spawnInterval{GameConfig::PIPE_SPAWN_INTERVAL};
     float m_spawnTimer{0.0f};
     bool m_isPaused{false};

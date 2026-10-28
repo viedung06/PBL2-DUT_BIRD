@@ -1,9 +1,10 @@
 #include "systems/collisionmanage.hpp"
-#include<optional>
+#include <optional>
+
 namespace systems {
 
 bool CollisionManager::checkCollisions(entities::Bird& bird, 
-                                     const std::vector<std::unique_ptr<entities::Pipe>>& pipes, 
+                                     const datastructures::my_queue<std::unique_ptr<entities::Pipe>>& pipes, 
                                      const entities::Ground& ground) {
     // Nếu chim đã chết rồi thì bỏ qua kiểm tra
     if (bird.isDead()) {
@@ -23,7 +24,6 @@ bool CollisionManager::checkCollisions(entities::Bird& bird,
     }
 
     // Nếu có xảy ra va chạm, gọi hàm takeHit() của chim
-    // (takeHit tự xử lý: có khiên -> phá khiên + bất tử, không có khiên -> chết thật)
     if (hasCollided) {
         return bird.takeHit(); // Trả về true nếu chim thực sự chết sau cú va chạm này
     }
@@ -31,17 +31,21 @@ bool CollisionManager::checkCollisions(entities::Bird& bird,
     return false; // Không có va chạm nào xảy ra
 }
 
-bool CollisionManager::checkPipeCollisions(entities::Bird& bird, const std::vector<std::unique_ptr<entities::Pipe>>& pipes) {
+bool CollisionManager::checkPipeCollisions(entities::Bird& bird, const datastructures::my_queue<std::unique_ptr<entities::Pipe>>& pipes) {
     sf::FloatRect birdHitbox = bird.getHitbox();
+    bool collided = false;
 
-    for (const auto& pipe : pipes) {
-        // Sử dụng hàm findIntersection chuẩn của SFML 3 để kiểm tra giao nhau
-        if (birdHitbox.findIntersection(pipe->getTopHitbox()).has_value() || 
-            birdHitbox.findIntersection(pipe->getBottomHitbox()).has_value()) {
-            return true;
+    pipes.forEach([&birdHitbox, &collided](const std::unique_ptr<entities::Pipe>& pipe) {
+        if (pipe && !collided) {
+            // Sử dụng hàm findIntersection chuẩn của SFML 3 để kiểm tra giao nhau
+            if (birdHitbox.findIntersection(pipe->getTopHitbox()).has_value() || 
+                birdHitbox.findIntersection(pipe->getBottomHitbox()).has_value()) {
+                collided = true;
+            }
         }
-    }
-    return false;
+    });
+
+    return collided;
 }
 
 bool CollisionManager::checkGroundCollision(entities::Bird& bird, const entities::Ground& ground) {
@@ -49,7 +53,7 @@ bool CollisionManager::checkGroundCollision(entities::Bird& bird, const entities
     sf::FloatRect groundHitbox = ground.getHitbox();
 
     // Kiểm tra xem hitbox của chim có chạm vào mặt đất không
-    if (birdHitbox.findIntersection(groundHitbox)) {
+    if (birdHitbox.findIntersection(groundHitbox).has_value()) {
         return true;
     }
 

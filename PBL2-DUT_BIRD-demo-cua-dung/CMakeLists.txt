@@ -44,6 +44,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     SFML::Audio
 )
 
+# Tự động copy thư mục assets vào thư mục build khi biên dịch
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+)
+
 # Tự động copy các DLL cần thiết vào thư mục build khi biên dịch
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

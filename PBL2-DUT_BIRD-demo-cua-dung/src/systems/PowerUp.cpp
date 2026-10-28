@@ -1,38 +1,46 @@
-#include"systems/PowerUp.hpp"
+#include "systems/PowerUp.hpp"
 #include <algorithm>
-namespace systems{
-   // 1. Cập nhật vị trí hộp quà di chuyển trôi sang trái (cùng tốc độ với ống nước)
+#include <random>
+
+namespace systems {
+
+namespace {
+std::random_device g_rdPower;
+std::mt19937 g_rngPower(g_rdPower());
+std::uniform_real_distribution<float> g_dist01(0.0f, 1.0f);
+}
+
+// 1. Cập nhật vị trí hộp quà di chuyển trôi sang trái (cùng tốc độ với ống nước)
 void GiftBox::update(float dt, float speed) {
     position.x -= speed * dt;
-    hitbox.position = position; // Cập nhật lại vị trí hitbox đi theo sprite/hình vẽ
+    hitbox.position = position;
 }
 
 // 2. Vẽ hộp quà lên màn hình
 void GiftBox::draw(sf::RenderTarget& target) const {
-    // Tạm thời dùng hình chữ nhật hoặc sprite để vẽ hộp quà
     sf::RectangleShape rect(sf::Vector2f(30.0f, 30.0f));
     rect.setPosition(position);
-    rect.setFillColor(sf::Color::Yellow); // Màu vàng cho hộp quà/item
+    rect.setFillColor(sf::Color::Yellow);
     target.draw(rect);
 }
 
 // --- Khởi tạo PowerUpSystem ---
 PowerUpSystem::PowerUpSystem() {
-    // Constructor mặc định
 }
 
-void PowerUpSystem::update(float dt, entities::Bird& bird,const std::vector<std::unique_ptr<entities::Pipe>>& pipes) {
+void PowerUpSystem::update(float dt, entities::Bird& bird, datastructures::my_queue<std::unique_ptr<entities::Pipe>>& pipes) {
     // --- 1. TỰ ĐỘNG SINH HỘP QUÀ KHI CÓ ỐNG MỚI ---
-    for (const auto& pipePtr : pipes) {
+    pipes.forEach([this](std::unique_ptr<entities::Pipe>& pipePtr) {
         if (pipePtr && !pipePtr->hasSpawnedGift && pipePtr->getX() >= GameConfig::WINDOW_WIDTH - 5.0f) {
-            pipePtr->hasSpawnedGift = true; // Đánh dấu ống này đã được xét để không bị lặp
+            pipePtr->hasSpawnedGift = true;
 
-            // Tỉ lệ ngẫu nhiên xuất hiện hộp quà
-            if (math_lib::randomFloat01() <GameConfig:: Rate_spawn_giftbox) {
+            // Tỉ lệ ngẫu nhiên xuất hiện hộp quà dùng <random>
+            if (g_dist01(g_rngPower) < GameConfig::Rate_spawn_giftbox) {
                 spawnGiftBox(pipePtr->getX(), pipePtr->getGapY());
             }
         }
-    }
+    });
+
     // --- Cập nhật vị trí các hộp quà đang có ---
     for (auto& box : m_giftBoxes) {
         box.update(dt, GameConfig::PIPE_SPEED); 
@@ -68,7 +76,7 @@ void PowerUpSystem::spawnGiftBox(float x, float y) {
     GiftBox box;
     box.position = sf::Vector2f(x, y);
     box.hitbox = sf::FloatRect({x, y}, {30.0f, 30.0f});
-    box.type = PowerUpType::Shield; // Tạm thời mặc định sinh ra hộp quà khiên
+    box.type = PowerUpType::Shield;
     box.collected = false;
     
     m_giftBoxes.push_back(box);
@@ -79,10 +87,8 @@ void PowerUpSystem::checkCollisions(entities::Bird& bird) {
 
     for (auto& box : m_giftBoxes) {
         if (!box.collected && birdHitbox.findIntersection(box.hitbox).has_value()) {
-            box.collected = true; // Đánh dấu hộp quà đã được nhặt
-            
-            // Kích hoạt hiệu ứng khiên 10 giây cho chim
-           bird.setHasShield(true);
+            box.collected = true;
+            bird.setHasShield(true);
             m_shieldTimer = 10.0f;
         }
     }
@@ -94,4 +100,5 @@ void PowerUpSystem::reset() {
     m_speedBoostTimer = 0.0f;
     m_enlargeTimer = 0.0f;
 }
-}
+
+} // namespace systems

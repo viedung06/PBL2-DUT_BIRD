@@ -1,6 +1,13 @@
 #include "systems/PipeSpawn.hpp"
+#include <random>
 
 namespace systems {
+
+namespace {
+// Bộ sinh số ngẫu nhiên chuẩn C++17
+std::random_device g_rd;
+std::mt19937 g_rng(g_rd());
+}
 
 PipeSpawnerSystem::PipeSpawnerSystem(float spawnInterval)
     : m_spawnInterval(spawnInterval),
@@ -21,30 +28,26 @@ void PipeSpawnerSystem::update(float dt) {
     }
 
     // 2. Di chuyển các cặp ống sang bên trái
-    for (auto& pipe : m_pipes) {
-        pipe->update(dt);
-    }
+    m_pipeQueue.forEach([dt](std::unique_ptr<entities::Pipe>& pipe) {
+        if (pipe) {
+            pipe->update(dt);
+        }
+    });
 
     // 3. Tự động thu hồi và xóa các ống đã trôi hoàn toàn ra khỏi màn hình bên trái
-    // Thuật toán lọc xóa 2 con trỏ không dùng thư viện ngoài
-    size_t writeIdx = 0;
-    for (size_t readIdx = 0; readIdx < m_pipes.size(); ++readIdx) {
-        if (!m_pipes[readIdx]->isOffScreen()) {
-            if (writeIdx != readIdx) {
-                m_pipes[writeIdx] = std::move(m_pipes[readIdx]);
-            }
-            ++writeIdx;
-        }
+    // Ống trôi theo thứ tự FIFO: Ống nào vào trước sẽ ra khỏi màn hình trước
+    while (!m_pipeQueue.empty() && m_pipeQueue.front() && m_pipeQueue.front()->isOffScreen()) {
+        m_pipeQueue.pop(); // Tự động gọi destructor giải phóng Pipe
     }
-    m_pipes.erase(m_pipes.begin() + writeIdx, m_pipes.end());
 }
 
 void PipeSpawnerSystem::spawnPipe() {
     // Tọa độ xuất hiện bên ngoài mép phải màn hình
     const float startX = static_cast<float>(GameConfig::WINDOW_WIDTH) + 20.0f;
 
-    // Sinh độ cao khe hở gapY ngẫu nhiên trong vùng an toàn bằng thư viện math_lib tự viết
-    const float gapY = math_lib::randomFloat(GameConfig::PIPE_MIN_GAP_Y, GameConfig::PIPE_MAX_GAP_Y);
+    // Sinh độ cao khe hở gapY ngẫu nhiên trong vùng an toàn bằng <random>
+    std::uniform_real_distribution<float> dist(GameConfig::PIPE_MIN_GAP_Y, GameConfig::PIPE_MAX_GAP_Y);
+    const float gapY = dist(g_rng);
 
     auto newPipe = std::make_unique<entities::Pipe>(startX, gapY, GameConfig::PIPE_GAP, GameConfig::PIPE_WIDTH);
 
@@ -53,24 +56,26 @@ void PipeSpawnerSystem::spawnPipe() {
         newPipe->setTexture(*m_topTexture, *m_bottomTexture);
     }
 
-    m_pipes.push_back(std::move(newPipe));
+    m_pipeQueue.push(std::move(newPipe));
 }
 
 void PipeSpawnerSystem::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    for (const auto& pipe : m_pipes) {
-        target.draw(*pipe, states);
-    }
+    m_pipeQueue.forEach([&target, states](const std::unique_ptr<entities::Pipe>& pipe) {
+        if (pipe) {
+            target.draw(*pipe, states);
+        }
+    });
 }
 
 bool PipeSpawnerSystem::checkPassedPipe(float birdX) {
-    for (auto& pipe : m_pipes) {
-        // Nếu chim đã bay qua mép phải của ống mà ống chưa được tính điểm
-        if (!pipe->isPassed() && birdX > pipe->getX() + pipe->getWidth()) {
+    bool passedAny = false;
+    m_pipeQueue.forEach([birdX, &passedAny](std::unique_ptr<entities::Pipe>& pipe) {
+        if (pipe && !pipe->isPassed() && birdX > pipe->getX() + pipe->getWidth()) {
             pipe->setPassed(true);
-            return true;
+            passedAny = true;
         }
-    }
-    return false;
+    });
+    return passedAny;
 }
 
 void PipeSpawnerSystem::setPaused(bool paused) {
@@ -82,7 +87,7 @@ bool PipeSpawnerSystem::isPaused() const {
 }
 
 void PipeSpawnerSystem::reset() {
-    m_pipes.clear();
+    m_pipeQueue.clear();
     m_spawnTimer = 0.0f;
     m_isPaused = false;
 }
@@ -90,20 +95,23 @@ void PipeSpawnerSystem::reset() {
 void PipeSpawnerSystem::setTextures(const sf::Texture* topTex, const sf::Texture* bottomTex) {
     m_topTexture = topTex;
     m_bottomTexture = bottomTex;
-    for (auto& pipe : m_pipes) {
-        if (m_topTexture != nullptr && m_bottomTexture != nullptr) {
+    m_pipeQueue.forEach([this](std::unique_ptr<entities::Pipe>& pipe) {
+        if (pipe && m_topTexture != nullptr && m_bottomTexture != nullptr) {
             pipe->setTexture(*m_topTexture, *m_bottomTexture);
         }
-    }
+    });
 }
 
 size_t PipeSpawnerSystem::getPipeCount() const {
-    return m_pipes.size();
+    return m_pipeQueue.size();
 }
 
-//Truy xuất danh sách ống để CollisionManager đem ra kiểm tra va chạm
-const std::vector<std::unique_ptr<entities::Pipe>>& PipeSpawnerSystem::getPipes() const {
-    return m_pipes;
+datastructures::my_queue<std::unique_ptr<entities::Pipe>>& PipeSpawnerSystem::getPipes() {
+    return m_pipeQueue;
+}
+
+const datastructures::my_queue<std::unique_ptr<entities::Pipe>>& PipeSpawnerSystem::getPipes() const {
+    return m_pipeQueue;
 }
 
 } // namespace systems

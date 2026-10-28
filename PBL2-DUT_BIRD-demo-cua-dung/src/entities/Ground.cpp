@@ -1,5 +1,5 @@
 #include "entities/Ground.hpp"
-#include "math_lib/MathLib.hpp"
+#include <algorithm>
 
 namespace entities {
 
@@ -41,6 +41,7 @@ void Ground::update(float dt) {
         return;
     }
     m_offsetX += m_speed * dt;
+
     if (m_sprite.has_value() && m_texturePtr != nullptr) {
         float textureWidth = static_cast<float>(m_texturePtr->getSize().x);
         if (textureWidth > 0.0f && m_offsetX >= textureWidth) {
@@ -59,6 +60,15 @@ void Ground::update(float dt) {
         }
     }
 }
+
+void Ground::reset() {
+    m_offsetX = 0.0f;
+    m_isPaused = false;
+    if (m_sprite.has_value() && m_texturePtr != nullptr) {
+        m_sprite->setTextureRect(sf::IntRect({0, 0}, {static_cast<int>(m_width), static_cast<int>(m_height)}));
+    }
+}
+
 void Ground::setPaused(bool paused) {
     m_isPaused = paused;
 }
@@ -66,18 +76,12 @@ void Ground::setPaused(bool paused) {
 bool Ground::isPaused() const {
     return m_isPaused;
 }
-void Ground::reset() {
-    m_offsetX = 0.0f;
-    if (m_sprite.has_value() && m_texturePtr != nullptr) {
-        m_sprite->setTextureRect(sf::IntRect({0, 0}, {static_cast<int>(m_width), static_cast<int>(m_height)}));
-    }
-}
 
 sf::FloatRect Ground::getHitbox() const {
     // Áp dụng co lùi biên trên của mặt đất (SFML 3: sf::FloatRect(position, size))
     return sf::FloatRect(
         {0.0f, m_posY + GameConfig::HITBOX_GROUND_INSET_Y},
-        {m_width, math_lib::max(0.0f, m_height - GameConfig::HITBOX_GROUND_INSET_Y)}
+        {m_width, std::max(0.0f, m_height - GameConfig::HITBOX_GROUND_INSET_Y)}
     );
 }
 

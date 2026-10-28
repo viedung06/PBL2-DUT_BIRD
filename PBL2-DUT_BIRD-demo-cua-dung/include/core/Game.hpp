@@ -2,12 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "GameConfig.hpp"
-#include "entities/Bird.hpp"
-#include "entities/Ground.hpp"
-#include "entities/Pipe.hpp"
-#include "systems/PipeSpawn.hpp"
-#include "systems/collisionmanage.hpp"
-#include "systems/PowerUp.hpp"
+#include "states/StateMachine.hpp"
 
 namespace core {
 
@@ -27,21 +22,14 @@ private:
     void processEvents();
     void update(float dt);
     void render();
-    void reset();
 
 private:
     sf::RenderWindow m_window;
     sf::Clock m_clock;
     bool m_isRunning{true};
-    bool m_isGameOver{false};
-    int m_score{0};
 
-    // Các thực thể và hệ thống cốt lõi
-    entities::Bird m_bird;
-    entities::Ground m_ground;
-    entities::Pipe m_pipe;
-    systems::PipeSpawnerSystem m_pipespawner;
-    systems::PowerUpSystem m_powerUpSystem;
+    // StateMachine quản lý toàn bộ các màn chơi theo Kiến trúc phân lớp
+    states::StateMachine m_stateMachine;
 };
 
 } // namespace core

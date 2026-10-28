@@ -1,38 +1,42 @@
 #include "entities/Pipe.hpp"
-#include "math_lib/MathLib.hpp"
+#include <algorithm>
 
 namespace entities {
 
 Pipe::Pipe(float startX, float gapY, float gapSize, float width)
-    : m_x(startX), m_gapY(gapY), m_gapSize(gapSize), m_width(width) {
+    : m_x(startX),
+      m_gapY(gapY),
+      m_gapSize(gapSize),
+      m_width(width) {
     initFallbackShapes();
     updateVisuals();
 }
 
 void Pipe::initFallbackShapes() {
-    sf::Color pipeColor(115, 191, 46);      // Màu xanh lục ống cống
-    sf::Color outlineColor(60, 120, 20);     // Viền ống cống đậm
-    const float outlineThickness = 2.0f;
+    // Màu xanh lá cây đặc trưng của ống nước Flappy Bird
+    const sf::Color pipeGreen(115, 191, 46);
+    const sf::Color pipeBorder(85, 140, 30);
+    const float borderThickness = 2.0f;
 
-    // Thân ống trên
-    m_topBodyShape.setFillColor(pipeColor);
-    m_topBodyShape.setOutlineThickness(outlineThickness);
-    m_topBodyShape.setOutlineColor(outlineColor);
+    // 1. Thân ống trên
+    m_topBodyShape.setFillColor(pipeGreen);
+    m_topBodyShape.setOutlineThickness(borderThickness);
+    m_topBodyShape.setOutlineColor(pipeBorder);
 
-    // Vành miệng ống trên
-    m_topRimShape.setFillColor(pipeColor);
-    m_topRimShape.setOutlineThickness(outlineThickness);
-    m_topRimShape.setOutlineColor(outlineColor);
+    // 2. Vành miệng ống trên
+    m_topRimShape.setFillColor(pipeGreen);
+    m_topRimShape.setOutlineThickness(borderThickness);
+    m_topRimShape.setOutlineColor(pipeBorder);
 
-    // Thân ống dưới
-    m_bottomBodyShape.setFillColor(pipeColor);
-    m_bottomBodyShape.setOutlineThickness(outlineThickness);
-    m_bottomBodyShape.setOutlineColor(outlineColor);
+    // 3. Vành miệng ống dưới
+    m_bottomRimShape.setFillColor(pipeGreen);
+    m_bottomRimShape.setOutlineThickness(borderThickness);
+    m_bottomRimShape.setOutlineColor(pipeBorder);
 
-    // Vành miệng ống dưới
-    m_bottomRimShape.setFillColor(pipeColor);
-    m_bottomRimShape.setOutlineThickness(outlineThickness);
-    m_bottomRimShape.setOutlineColor(outlineColor);
+    // 4. Thân ống dưới
+    m_bottomBodyShape.setFillColor(pipeGreen);
+    m_bottomBodyShape.setOutlineThickness(borderThickness);
+    m_bottomBodyShape.setOutlineColor(pipeBorder);
 }
 
 void Pipe::setTexture(const sf::Texture& topTexture, const sf::Texture& bottomTexture) {
@@ -48,9 +52,9 @@ void Pipe::update(float dt) {
 
 void Pipe::updateVisuals() {
     const float halfGap = m_gapSize / 2.0f;
-    const float topHeight = math_lib::max(0.0f, m_gapY - halfGap);
+    const float topHeight = std::max(0.0f, m_gapY - halfGap);
     const float bottomY = m_gapY + halfGap;
-    const float bottomHeight = math_lib::max(0.0f, GameConfig::GROUND_Y - bottomY);
+    const float bottomHeight = std::max(0.0f, GameConfig::GROUND_Y - bottomY);
 
     const float rimHeight = 24.0f;
     const float rimExtraWidth = 8.0f; // Vành miệng ống nở rộng hơn thân mỗi bên 4px
@@ -75,17 +79,17 @@ void Pipe::updateVisuals() {
         }
     } else {
         // Căn chỉnh fallback shapes cho ống trên
-        m_topBodyShape.setSize({m_width, math_lib::max(0.0f, topHeight - rimHeight)});
+        m_topBodyShape.setSize({m_width, std::max(0.0f, topHeight - rimHeight)});
         m_topBodyShape.setPosition({m_x, 0.0f});
 
         m_topRimShape.setSize({m_width + rimExtraWidth, rimHeight});
-        m_topRimShape.setPosition({m_x - rimExtraWidth / 2.0f, math_lib::max(0.0f, topHeight - rimHeight)});
+        m_topRimShape.setPosition({m_x - rimExtraWidth / 2.0f, std::max(0.0f, topHeight - rimHeight)});
 
         // Căn chỉnh fallback shapes cho ống dưới
         m_bottomRimShape.setSize({m_width + rimExtraWidth, rimHeight});
         m_bottomRimShape.setPosition({m_x - rimExtraWidth / 2.0f, bottomY});
 
-        m_bottomBodyShape.setSize({m_width, math_lib::max(0.0f, bottomHeight - rimHeight)});
+        m_bottomBodyShape.setSize({m_width, std::max(0.0f, bottomHeight - rimHeight)});
         m_bottomBodyShape.setPosition({m_x, bottomY + rimHeight});
     }
 }
@@ -104,13 +108,13 @@ void Pipe::setPassed(bool passed) {
 }
 
 sf::FloatRect Pipe::getTopBounds() const {
-    const float topHeight = math_lib::max(0.0f, m_gapY - (m_gapSize / 2.0f));
+    const float topHeight = std::max(0.0f, m_gapY - (m_gapSize / 2.0f));
     return sf::FloatRect({m_x, 0.0f}, {m_width, topHeight});
 }
 
 sf::FloatRect Pipe::getBottomBounds() const {
     const float bottomY = m_gapY + (m_gapSize / 2.0f);
-    const float bottomHeight = math_lib::max(0.0f, GameConfig::GROUND_Y - bottomY);
+    const float bottomHeight = std::max(0.0f, GameConfig::GROUND_Y - bottomY);
     return sf::FloatRect({m_x, bottomY}, {m_width, bottomHeight});
 }
 
@@ -118,8 +122,8 @@ sf::FloatRect Pipe::getTopHitbox() const {
     sf::FloatRect bounds = getTopBounds();
     return sf::FloatRect(
         {bounds.position.x + GameConfig::HITBOX_PIPE_INSET_X, 0.0f},
-        {math_lib::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
-         math_lib::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
+        {std::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
+         std::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
     );
 }
 
@@ -128,8 +132,8 @@ sf::FloatRect Pipe::getBottomHitbox() const {
     return sf::FloatRect(
         {bounds.position.x + GameConfig::HITBOX_PIPE_INSET_X,
          bounds.position.y + GameConfig::HITBOX_PIPE_INSET_Y},
-        {math_lib::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
-         math_lib::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
+        {std::max(0.0f, bounds.size.x - 2.0f * GameConfig::HITBOX_PIPE_INSET_X),
+         std::max(0.0f, bounds.size.y - GameConfig::HITBOX_PIPE_INSET_Y)}
     );
 }
 
@@ -179,8 +183,8 @@ void Pipe::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     } else {
         target.draw(m_topBodyShape, states);
         target.draw(m_topRimShape, states);
-        target.draw(m_bottomRimShape, states);
         target.draw(m_bottomBodyShape, states);
+        target.draw(m_bottomRimShape, states);
     }
 }
 
